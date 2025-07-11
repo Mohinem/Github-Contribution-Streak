@@ -1,12 +1,16 @@
 {
-    "manifest_version": 3,
-    "name": "GitHub Contribution Streak",
-    "version": "1.0",
-    "description": "Displays your current and longest GitHub contribution streak on profile pages.",
-    "content_scripts": [
-      {
-        "matches": ["https://github.com/*"],
-        "js": ["content.js"]
-      }
-    ]
-  }
+  "manifest_version": 3,
+  "name": "GitHub Contribution Streak",
+  "version": "1.3",
+  "description": "Displays your current and longest GitHub contribution streak on profile pages.",
+  "host_permissions": [
+    "https://github.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://github.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
