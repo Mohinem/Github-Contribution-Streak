@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "GitHub Contribution Streak",
-  "version": "1.6",
+  "version": "1.10",
   "description": "Displays your current and longest GitHub contribution streak based on the visible contribution calendar.",
   "host_permissions": [
     "https://github.com/*"

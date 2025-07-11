@@ -1,28 +1,33 @@
+// File: content.js
 (() => {
   console.log('[StreakExt] 🔥 content.js loaded');
 
-  function init() {
-    // Grab all calendar cells with data-date
+  function computeAndInject() {
     const cells = document.querySelectorAll(
       '.js-yearly-contributions .ContributionCalendar-day[data-date]'
     );
-    console.log('[StreakExt] found cells:', cells.length);
-    if (!cells.length) return false;
+    if (!cells.length) return;
 
-    // Build sorted array of {dateStr, contributed}
+    // Build sorted list of days
     const days = Array.from(cells)
       .map(el => ({
         dateStr: el.getAttribute('data-date'),
         contributed: parseInt(el.getAttribute('data-level') || '0', 10) > 0
       }))
-      .sort((a, b) => (a.dateStr < b.dateStr ? -1 : 1));
+      .sort((a, b) => a.dateStr.localeCompare(b.dateStr));
 
-    // Dynamically determine the range from the calendar
+    // Determine period
     const startDateStr = days[0].dateStr;
     const endDateStr = days[days.length - 1].dateStr;
-    console.log(`[StreakExt] period: ${startDateStr} – ${endDateStr}`);
 
-    // Compute longest streak
+    // Today's date string (UTC)
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const currentYear = todayStr.slice(0, 4);
+    const endYear = endDateStr.slice(0, 4);
+    // Show "Current streak" only when calendar ends today or later AND in the current year view
+    const showCurrent = endDateStr >= todayStr && endYear === currentYear;
+
+    // Calculate longest streak
     let longest = 0;
     let temp = 0;
     days.forEach(day => {
@@ -34,42 +39,53 @@
       }
     });
 
-    // Compute current (ending) streak
-    let current = 0;
-    for (let i = days.length - 1; i >= 0; i--) {
-      if (days[i].contributed) current++;
-      else break;
+    // Calculate ongoing streak only if within period
+    let ongoing = 0;
+    if (showCurrent) {
+      for (let i = days.length - 1; i >= 0; i--) {
+        if (days[i].contributed) ongoing++;
+        else break;
+      }
     }
-    console.log(`[StreakExt] current: ${current}, longest: ${longest}`);
 
-    // Insert or update banner beneath the calendar header
+    // Locate header
     const header = document.querySelector('.js-yearly-contributions h2');
-    if (!header) {
-      console.error('[StreakExt] header not found');
-      return true;
-    }
+    if (!header) return;
+
+    // Remove existing banner
     const existing = document.getElementById('streak-banner');
     if (existing) existing.remove();
 
+    // Create banner
     const banner = document.createElement('div');
     banner.id = 'streak-banner';
     banner.style.cssText =
       'margin:8px 0;padding:6px 12px;background:#f6f8fa;border-radius:4px;font-size:14px;';
-    banner.innerHTML = `
-      <div><strong>Period:</strong> ${startDateStr} &ndash; ${endDateStr}</div>
-      <div><strong>Current streak:</strong> ${current} days &nbsp;|&nbsp;<strong>Longest streak:</strong> ${longest} days</div>
-    `;
-    header.insertAdjacentElement('afterend', banner);
-    console.log('[StreakExt] banner injected');
 
-    return true;
+        // Build inner HTML conditionally with proper singular/plural
+    const ongoingLabel = ongoing === 1 ? 'day' : 'days';
+    const longestLabel = longest === 1 ? 'day' : 'days';
+    let html = `<div><strong>Period:</strong> ${startDateStr} &ndash; ${endDateStr}</div>`;
+    if (showCurrent) {
+      html += `<div><strong>Current streak:</strong> ${ongoing} ${ongoingLabel} &nbsp;|&nbsp;<strong>Longest streak:</strong> ${longest} ${longestLabel}</div>`;
+    } else {
+      html += `<div><strong>Longest streak:</strong> ${longest} ${longestLabel}</div>`;
+    }
+    banner.innerHTML = html;
+
+    header.insertAdjacentElement('afterend', banner);
   }
 
-  // Poll until the calendar SVG has fully loaded
-  (function retry() {
-    if (!init()) {
-      console.log('[StreakExt] retrying in 500ms');
-      setTimeout(retry, 500);
-    }
-  })();
+  // Debounced observer
+  let timeoutId;
+  const observer = new MutationObserver(() => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(computeAndInject, 300);
+  });
+
+  // Observe relevant subtree
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  // Initial run
+  computeAndInject();
 })();
