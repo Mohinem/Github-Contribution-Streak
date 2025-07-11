@@ -1,23 +1,31 @@
 # GitHub Contribution Streak Extension
 
-Adds a banner beneath the GitHub contribution graph to show your current and longest commit-day streaks for the past year. Uses the calendar’s `data-level` attribute to count days with any contributions.
+Adds a banner beneath the GitHub contribution graph showing your **current** and **longest** commit streak within a specified date range. Avoids timezone issues by comparing raw date strings (`YYYY-MM-DD`).
 
 ## Installation
 
 1. Clone or download this repository.
-2. In Chrome/Brave, navigate to your extensions page:
-   - **chrome://extensions**
-   - **brave://extensions**
+2. Open your browser’s extensions page:
+   - **Chrome:** `chrome://extensions`
+   - **Brave:** `brave://extensions`
 3. Enable **Developer mode**.
-4. Click **Load unpacked** and select this project’s directory.
+4. Click **Load unpacked** and select this directory.
 5. Grant the extension access to `github.com` when prompted.
-6. Visit any GitHub profile to see your streak stats.
+6. Navigate to any GitHub profile to see your streak stats for the chosen period.
+
+## Configuration
+
+Edit `content.js`:
+```js
+const startDateStr = 'YYYY-MM-DD';
+const endDateStr = 'YYYY-MM-DD';
+```
 
 ## Development
 
-- Edit **content.js** or **manifest.json**.
-- On the extensions page, click the reload (⟳) icon.
-- Refresh your GitHub profile page.
+- Modify **content.js** or **manifest.json**.
+- Reload the extension (⟳) on the extensions page.
+- Refresh the GitHub profile page.
 
 ## License
 
